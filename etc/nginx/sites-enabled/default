@@ -1,0 +1,48 @@
+# Roundcube detects HTTPS from the HTTPS FastCGI parameter, so we set it also when
+# a reverse proxy in front of the container terminates TLS.
+map $http_x_forwarded_proto $roundcube_https {
+    default $https;
+    https on;
+}
+
+server {
+    listen 80 default_server;
+    server_name _;
+
+    absolute_redirect off;
+
+    root /var/www;
+
+    location / {
+        return 404;
+    }
+
+    location ~ /\. {
+        return 403;
+    }
+
+    location = /roundcube {
+        return 301 /roundcube/;
+    }
+
+    location = /roundcube/ {
+        index index.php;
+    }
+
+    location = /roundcube/favicon.ico {
+        rewrite ^ /roundcube/static.php/skins/elastic/images/favicon.ico last;
+    }
+
+    # Roundcube serves all static files (skins, plugins, JavaScript) through static.php.
+    location /roundcube/ {
+        return 404;
+    }
+
+    location ~ ^/roundcube/(index|static)\.php(/|$) {
+        fastcgi_split_path_info ^(.+?\.php)(/.*)$;
+        include fastcgi_php;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        fastcgi_param PATH_INFO $fastcgi_path_info;
+        fastcgi_param HTTPS $roundcube_https if_not_empty;
+    }
+}

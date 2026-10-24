@@ -1,0 +1,8 @@
+# /dev/shm/cron-environment is written by bash and cannot be sourced by sh.
+SHELL=/bin/bash
+
+# Removes expired sessions, cache entries and temporary files.
+17 * * * * root . /dev/shm/cron-environment && chpst -u fcgi-php /usr/share/roundcube/bin/gc.sh
+
+# Removes database records marked as deleted.
+42 3 * * * root . /dev/shm/cron-environment && chpst -u fcgi-php /usr/share/roundcube/bin/cleandb.sh > /dev/null

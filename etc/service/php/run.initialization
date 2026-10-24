@@ -1,0 +1,12 @@
+# Volumes can be mounted empty and owned by root.
+mkdir -p /var/lib/roundcube/db /var/log/roundcube
+chown fcgi-php:fcgi-php /var/lib/roundcube/db /var/log/roundcube
+
+# The key is generated only once and stored in the volume, so that users stay logged in
+# when the container is recreated.
+if [ ! -s /var/lib/roundcube/des_key ]; then
+  (umask 027 && tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 24 > /var/lib/roundcube/des_key)
+  chown root:fcgi-php /var/lib/roundcube/des_key
+fi
+
+chpst -u "fcgi-php:$(id -Gn fcgi-php | tr ' ' ':')" /usr/bin/php /usr/local/lib/roundcube/db-setup.php
