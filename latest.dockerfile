@@ -7,7 +7,6 @@ VOLUME /etc/roundcube/conf.d
 VOLUME /var/lib/roundcube
 VOLUME /var/log/roundcube
 
-# We install the upstream release because distribution packages lag behind Roundcube security releases.
 # ca-certificates is kept installed because Roundcube verifies TLS certificates of IMAP and SMTP servers.
 RUN apt-get update -q -q && \
   apt-get install wget ca-certificates \
